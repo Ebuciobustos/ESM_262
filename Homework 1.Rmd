@@ -1,0 +1,187 @@
+---
+title: "Homework 1"
+author: "Edaysi Bucio"
+date: "3 de mayo de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Packages and database
+```{r}
+
+library(tidyverse)
+library(readr)
+library(dplyr)
+
+parcels_raw <- read_csv("Santa_Barbara_County_parcels_2011.csv",
+ col_types = cols(.default = col_character()))
+
+
+View(parcels_raw)
+
+
+```
+
+
+## Import and tidy 
+
+**Read the parcels data as-is (all columns; no automatic type conversion) into a parcels_raw tibble.**
+```{r}
+
+parcels_raw2 <- select(parcels_raw,
+                   apn = APN,
+                   site1 = Situs1,
+                   site2 = Situs2, 
+                   acreage = Acreage,
+                   code = UseCode,
+                   ntcode = NonTaxCode,
+                   agpress = AgPres,
+                   land_value = LandValue,
+                   NetImpr = Net_Impr,
+                   NetAV = Net_AV,
+                   Address1 = M_Address1,
+                   Adress2 = M_Address2)
+
+#Double with decimals
+#Integer complete numbers
+
+```
+
+** Convert the parcels columns to the appropriate type. Convert any placeholders for unknown data to NA**
+```{r}
+
+#Individually setting the columns 
+
+#parcels2$apn = parse_character(parcels2$apn)
+
+parcels_raw2 <-
+  transmute(parcels_raw,
+    apn         = parse_character(APN, na = "Unknown"),
+    site1       = parse_character(Situs1, na = "Unknown"),
+    site2       = parse_character(Situs2, na = "Unknown"),
+    acreage     = Acreage,
+    code        = parse_character(UseCode, na = "Unknown"),
+    ntcode      = parse_character(NonTaxCode, na = "Unknown"),
+    agpress     = parse_character(AgPres, na = "Unknown"),
+    land_value  = LandValue,
+    NetImpr     = Net_Impr,
+    NetAv       = Net_AV,
+    Address1    = parse_character(M_Address1, na = "Unknown"),
+    Adress2     = parse_character(M_Address1, na = "Unknown")
+  )
+
+
+```
+
+## Write the parcels tibble to a CSV file (using "|" as a delimiter).
+```{r}
+
+parcels_raw <- write_delim(parcels_raw,
+  "parcels.csv",
+  delim = "|",
+  na = ""
+)
+
+View(parcels_raw2)
+
+```
+
+
+############################################# Analyze ######################################
+
+##  1. What are the 10 most-frequently-occuring land uses (in descending order)? 
+Hint: Load the UseCodes into a separate tibble, then join it to the parcels tibble.
+
+```{r}
+
+parcels_raw %>%
+  mutate(LandUse = fct_lump(LandUse, n = 10)) %>% #Especifying that I want the top 10
+  count(LandUse, sort = TRUE) %>%
+  print(n = Inf)
+
+
+```
+
+## 2. How many acres are in agricultural preserves? 
+Assume agricultural preserves are indicated by non-NA values for AgPres.
+Answer: 549,563.4 acres
+```{r}
+
+preserves <- parcels_raw2 %>%
+  select(acreage, agpress) %>%
+  drop_na() #Find non-NA values for agpres
+
+sum(as.numeric(preserves$acreage)) #Sum all acres from agricultural preserves
+
+
+```
+
+
+## 3. What is the mean net assessed value per acre of the entire county? 
+i.e., as if the entire county were a single parcel.
+Answer: $227,627 per acre
+```{r}
+
+parcels_raw2 %>%
+  select(land_value) %>%
+   drop_na()
+
+mean((as.numeric(parcels_raw2$land_value)))
+
+
+
+
+```
+
+## 4. What is the total net assessed value of all non-taxable parcels? 
+Assume non-taxable parcels are indicated by non-NA values for NonTaxCode.
+Answer: $397,704,203,725
+
+```{r}
+
+parcels_raw %>%
+  select(Acreage, NonTaxCode) %>%
+   drop_na()
+
+sum((as.numeric(parcels_raw$Acreage))) #Getting the total non-taxable parcels
+
+Net_value <- 1747175 * 227627 # the number I got times the mean value per acre 
+Net_value
+
+
+```
+
+## 5. What are the 10 largest property holders, by acreage? 
+Use the complete mailing address for tax statements as a proxy for the parcel owner. Ignore parcels where either component of the address is NA.
+
+```{r}
+
+parcels_raw2 %>%
+  select(site2, acreage) %>%
+  drop_na() %>%
+  mutate(site2 = fct_lump(site2, n = 10)) %>% 
+  count(site2, acreage, sort = TRUE)  %>%
+  group_by(site2)
+
+#View(Situs_acreage)
+
+```
+
+## 6. What are the 10 largest property holders, by net assessed value?
+
+```{r}
+
+parcels_raw2 %>%
+  select(site2, land_value) %>%
+  drop_na() %>%
+  mutate(site2 = fct_lump(site2, n = 10)) %>% 
+  count(land_value, site2, sort = TRUE) %>%
+  group_by(land_value)
+
+  
+
+```
+
