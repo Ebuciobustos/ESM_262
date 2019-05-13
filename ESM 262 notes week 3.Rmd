@@ -1,0 +1,99 @@
+---
+title: "ESM 262 week 3"
+author: "Edaysi Bucio"
+date: "19 de abril de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Download packages and data base
+
+```{r}
+
+library(tidyverse)
+
+heights <- read.csv("heights.csv")
+
+foo <- read_csv("a,b,c
+1,2,3
+4,5,6")
+
+bar <- read_csv("1,2,3\n4,5,6", dol_names = c("x", "y", "z"))
+
+baz <- parse_logical(c("TRUE", "FALSE", "NA", "bozo")) #Makes logical arguments? Conversion 
+problems(baz)
+
+#Parsel characters
+parse_double("1.23e10")
+
+parse_double("1,23", locale = locale(decimal_mark = ","))
+
+charToRaw("Hadley")
+
+x1 <- "El Ni\xf1o was particularly bad this year"
+x1
+
+parse_character(x1, locale = locale(encoding = "Latin1"))
+
+parse_date("01/02/15", "%m/%d/%y")
+
+
+############################################################## Excercise 2
+
+challenge <- read_csv(readr_example("challenge.csv")) #Problem
+
+challenge <- read_csv(readr_example("challenge.csv"), #Problem
+                      col_types = cols(
+                        x = col_double(),
+                        y = col_logical()
+                      ))
+
+challenge <- read_csv(readr_example("challenge.csv"), #Problem
+                      col_types = cols(
+                        x = col_double(),
+                        y = col_character()
+                      )) #With a character im forcing to not do other interpretation of the colum, that is why I'm not getting the error
+
+tail(challenge)
+
+challenge <- read_csv(readr_example("challenge.csv"), #Problem
+                      col_types = cols(
+                        x = col_double(),
+                        y = col_date()
+                      )) #By telling R that Y is in date format, R can look into this colum as dates
+
+
+
+
+```
+
+
+How to read a csv file that is in text?
+```{r}
+
+?read_delim
+
+gaz_raw <- read_delim("CA_Features_20190301.txt","|")
+View(gaz_raw)
+
+
+```
+
+
+
+
+
+
+Notes
+
+Link: https://r4ds.had.co.nz/data-import.html
+
+Pase_double = gives cientific notation you need to write the number as parse_double("1.23e10"")
+locale = put in a specific location. Creates a local specification
+Locale can be apply to the entire data frame 
+parse_numbes ---> Goes to look and find numbers, or de closest one when you give numbers with decimals. 
+
+charToRaw("Hadley") --> Represents chunks of bits. Sexadecimals are use to talk about bits
