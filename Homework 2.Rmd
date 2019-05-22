@@ -1,0 +1,155 @@
+---
+title: "Homework 1"
+author: "Edaysi Bucio"
+date: "3 de mayo de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DBI)
+library(RSQLite)
+library(sqldf)
+library(dbplyr)
+
+```
+
+#Connect Rmd SQL chunk to SQLite database
+```{r}
+
+
+db <- dbConnect(RSQLite::SQLite(), dbname = "database.db")
+src_dbi(db)
+
+db2 <- dbConnect(SQLite(), "database.db")
+dbListTables(db)
+
+#Problem: I do not have tables while creating the db file. I get stuck in here
+
+```
+
+#1. ##  1. What are the 10 most-frequently-occuring land uses (in descending order)? 
+```{r}
+
+
+```
+
+
+##  1. What are the 10 most-frequently-occuring land uses (in descending order)? 
+Hint: Load the UseCodes into a separate tibble, then join it to the parcels tibble.
+
+```{sql connection=db}
+
+#parcels_raw %>%
+  select(LandUse) %>%
+  filter(!is.na(LandUse)) %>% #Especifying that I want the top 10 #Factors that occurs the most I need to drop other
+  count(LandUse, sort = TRUE) %>%
+  print(n = Inf)
+
+
+SELECT LandUse, personal FROM Person
+
+
+```
+
+## 2. How many acres are in agricultural preserves? 
+Assume agricultural preserves are indicated by non-NA values for AgPres.
+Answer: 549,563.4 acres
+```{sql connection=db}
+
+preserves <- parcels_raw2 %>%
+  select(acreage, agpress) %>%
+  filter(!is.na(acreage)) %>%
+  filter(!is.na(agpress))
+
+sum(as.numeric(preserves$acreage)) #Sum all acres from agricultural preserves
+
+
+```
+
+
+## 3. What is the mean net assessed value per acre of the entire county? 
+Answer: The average net value per acre is $34,202.63
+
+
+```{r}
+
+Total_acre <- parcels_raw2 %>%
+  select(acreage)
+
+Total_value <- parcels_raw2 %>%
+  select(NetAv) 
+
+Mean_val <- sum(Total_value)/sum(Total_acre)#Find the total land value of the county and divided by the total land /acreage
+
+Mean_val #Show the value
+
+
+```
+
+## 4. What is the total net assessed value of all non-taxable parcels? 
+Answer: The total net assessed value of non-taxable parcels is $1,093,026,091 
+
+
+```{r}
+
+NonT <- parcels_raw2 %>%
+  group_by(ntcode, NetAv) %>%
+  filter(!is.na(ntcode)) %>%
+  summarize(total_val = sum(NetAv, na.rm = TRUE))
+
+Net_Value <- sum(NonT$total_val)
+Net_Value
+
+
+# 1,093,026,091   
+
+```
+
+## 5. What are the 10 largest property holders, by acreage? 
+Use the complete mailing address for tax statements as a proxy for the parcel owner. Ignore parcels where either component of the address is NA.
+
+#The tenth row should be PO Box 338, Santa Ynez, with about 9,200 acres.
+
+```{r}
+
+parcels_raw2 %>%
+  group_by(Address1, acreage) %>%
+  drop_na() %>% #Change fct_lump by group_by and use summarize to add all of the acress by owner 
+  count(Address1, acreage, sort = TRUE)
+
+parcels_raw2 %>%
+  group_by(Address1, Adress2) %>%
+  summarize(total_val = sum(net_val, na.rm = TRUE))
+
+#Combine address 1 and address 2 
+
+#View(Situs_acreage)
+
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay, na.rm = TRUE))
+
+result2 <- parcels %>%
+  group_by(mail_addr1, mail_addr2) %>%
+  summarize(total_val = sum(net_val, na.rm = TRUE))
+
+
+```
+
+## 6. What are the 10 largest property holders, by net assessed value?
+
+```{r}
+
+parcels_raw2 %>%
+  select(site2, land_value) %>%
+  drop_na() %>%
+  mutate(site2 = fct_lump(site2, n = 10)) %>% 
+  count(land_value, site2, sort = TRUE) %>%
+  group_by(land_value)
+ 
+  
+
+```
+
