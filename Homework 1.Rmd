@@ -1,4 +1,3 @@
-
 ---
 title: "Homework 1"
 author: "Edaysi Bucio"
@@ -8,14 +7,16 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readr)
+library(dplyr)
+
 ```
 
 ## Packages and database
 ```{r}
 
-library(tidyverse)
-library(readr)
-library(dplyr)
 
 parcels_raw <- read_csv("Santa_Barbara_County_parcels_2011.csv",
  col_types = cols(.default = col_character()))
@@ -63,13 +64,13 @@ parcels_raw2 <-
     apn         = parse_character(APN, na = "Unknown"),
     site1       = parse_character(Situs1, na = "Unknown"),
     site2       = parse_character(Situs2, na = "Unknown"),
-    acreage     = Acreage,
+    acreage     = parse_number(Acreage,na = "Unknown"),
     code        = parse_character(UseCode, na = "Unknown"),
     ntcode      = parse_character(NonTaxCode, na = "Unknown"),
     agpress     = parse_character(AgPres, na = "Unknown"),
-    land_value  = LandValue,
-    NetImpr     = Net_Impr,
-    NetAv       = Net_AV,
+    land_value  = parse_number(LandValue, na = "Unkown"),
+    NetImpr     = parse_number(Net_Impr, na = "Unknown"),
+    NetAv       = parse_number(Net_AV, na = "Unknown"),
     Address1    = parse_character(M_Address1, na = "Unknown"),
     Adress2     = parse_character(M_Address1, na = "Unknown")
   )
@@ -80,18 +81,15 @@ parcels_raw2 <-
 ## Write the parcels tibble to a CSV file (using "|" as a delimiter).
 ```{r}
 
-parcels_raw <- write_delim(parcels_raw,
+write_delim(parcels_raw,
   "parcels.csv",
   delim = "|",
   na = ""
 )
 
-View(parcels_raw2)
 
 ```
 
-
-############################################# Analyze ######################################
 
 ##  1. What are the 10 most-frequently-occuring land uses (in descending order)? 
 Hint: Load the UseCodes into a separate tibble, then join it to the parcels tibble.
@@ -99,9 +97,15 @@ Hint: Load the UseCodes into a separate tibble, then join it to the parcels tibb
 ```{r}
 
 parcels_raw %>%
-  mutate(LandUse = fct_lump(LandUse, n = 10)) %>% #Especifying that I want the top 10
+  select(LandUse) %>%
+  filter(!is.na(LandUse)) %>% #Especifying that I want the top 10 #Factors that occurs the most I need to drop other
   count(LandUse, sort = TRUE) %>%
   print(n = Inf)
+
+
+#parcels_raw2 %>%
+ # group_by(Land) ##Connect USe code and landuse #Join the two databases
+#count()
 
 
 ```
@@ -113,7 +117,8 @@ Answer: 549,563.4 acres
 
 preserves <- parcels_raw2 %>%
   select(acreage, agpress) %>%
-  drop_na() #Find non-NA values for agpres
+  filter(!is.na(acreage)) %>%
+  filter(!is.na(agpress))
 
 sum(as.numeric(preserves$acreage)) #Sum all acres from agricultural preserves
 
@@ -122,52 +127,71 @@ sum(as.numeric(preserves$acreage)) #Sum all acres from agricultural preserves
 
 
 ## 3. What is the mean net assessed value per acre of the entire county? 
-i.e., as if the entire county were a single parcel.
-Answer: $227,627 per acre
+Answer: The average net value per acre is $34,202.63
+
+
 ```{r}
 
-parcels_raw2 %>%
-  select(land_value) %>%
-   drop_na()
+Total_acre <- parcels_raw2 %>%
+  select(acreage)
 
-mean((as.numeric(parcels_raw2$land_value)))
+Total_value <- parcels_raw2 %>%
+  select(NetAv) 
 
+Mean_val <- sum(Total_value)/sum(Total_acre)#Find the total land value of the county and divided by the total land /acreage
 
+Mean_val #Show the value
 
 
 ```
 
 ## 4. What is the total net assessed value of all non-taxable parcels? 
-Assume non-taxable parcels are indicated by non-NA values for NonTaxCode.
-Answer: $397,704,203,725
+Answer: The total net assessed value of non-taxable parcels is $1,093,026,091 
+
 
 ```{r}
 
-parcels_raw %>%
-  select(Acreage, NonTaxCode) %>%
-   drop_na()
+NonT <- parcels_raw2 %>%
+  group_by(ntcode, NetAv) %>%
+  filter(!is.na(ntcode)) %>%
+  summarize(total_val = sum(NetAv, na.rm = TRUE))
 
-sum((as.numeric(parcels_raw$Acreage))) #Getting the total non-taxable parcels
+Net_Value <- sum(NonT$total_val)
+Net_Value
 
-Net_value <- 1747175 * 227627 # the number I got times the mean value per acre 
-Net_value
 
+# 1,093,026,091   
 
 ```
 
 ## 5. What are the 10 largest property holders, by acreage? 
 Use the complete mailing address for tax statements as a proxy for the parcel owner. Ignore parcels where either component of the address is NA.
 
+#The tenth row should be PO Box 338, Santa Ynez, with about 9,200 acres.
+
 ```{r}
 
 parcels_raw2 %>%
-  select(site2, acreage) %>%
-  drop_na() %>%
-  mutate(site2 = fct_lump(site2, n = 10)) %>% 
-  count(site2, acreage, sort = TRUE)  %>%
-  group_by(site2)
+  group_by(Address1, acreage) %>%
+  drop_na() %>% #Change fct_lump by group_by and use summarize to add all of the acress by owner 
+  count(Address1, acreage, sort = TRUE)
+
+parcels_raw2 %>%
+  group_by(Address1, Adress2) %>%
+  summarize(total_val = sum(net_val, na.rm = TRUE))
+
+#Combine address 1 and address 2 
 
 #View(Situs_acreage)
+
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay, na.rm = TRUE))
+
+result2 <- parcels %>%
+  group_by(mail_addr1, mail_addr2) %>%
+  summarize(total_val = sum(net_val, na.rm = TRUE))
+
 
 ```
 
@@ -181,7 +205,7 @@ parcels_raw2 %>%
   mutate(site2 = fct_lump(site2, n = 10)) %>% 
   count(land_value, site2, sort = TRUE) %>%
   group_by(land_value)
-
+ 
   
 
 ```
