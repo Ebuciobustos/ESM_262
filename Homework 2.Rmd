@@ -12,6 +12,7 @@ library(DBI)
 library(RSQLite)
 library(sqldf)
 library(dbplyr)
+library(tidyverse)
 
 ```
 ####### Old code from homework 1 #############################################
@@ -76,12 +77,16 @@ Parcels <- dbConnect(RSQLite::SQLite(), dbname = "parcels.db") #Creating an empt
 src_dbi(Parcels) 
 dbListTables(Parcels) #When I'm trying to get the list of tables, it just showed up the name of the dataset, no the name of each table as it is supposed. Not sure if I'm missing a step. 
 
+dbWriteTable(conn = Parcels, name = "tableP", value = parcels_raw2)
+
+#Whatever you call the table within the connection (i.e. dbWriteTable(conn = XXX, name = tablename, value = your_dataframe)), use that in your SQL code: SELECT columnnames FROM tablename.
+
+
 ```
 
-```{sql, connection=db}
+```{sql, connection=Parcels}
 
-SELECT * 
-FROM Santa_Barbara_County_parcels_2011
+SELECT columnnames FROM tableP
 
  
 ```
