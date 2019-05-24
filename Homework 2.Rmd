@@ -178,7 +178,7 @@ The second row should be 735 Anacapa, SB, at about $190 million.
 ```{sql connection=Parcels}
 
 
-SELECT DISTINCT Address1, NetAv 
+SELECT Address1, NetAv 
 FROM tableP 
 WHERE Address1 IS NOT NULL
 GROUP BY Address1 
