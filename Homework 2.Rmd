@@ -64,6 +64,8 @@ parcels_raw2 <-
     Adress2     = parse_character(M_Address1, na = "Unknown")
   )
 
+View(parcels_raw)
+
 ```
 
 ####### New code #############################################################
@@ -74,50 +76,54 @@ parcels_raw2 <-
 
 Parcels <- dbConnect(RSQLite::SQLite(), dbname = "parcels.db") #Creating an empty database. Creating the connection step
 
-src_dbi(Parcels) 
-dbListTables(Parcels) #When I'm trying to get the list of tables, it just showed up the name of the dataset, no the name of each table as it is supposed. Not sure if I'm missing a step. 
+dbListTables(Parcels) 
 
-dbWriteTable(conn = Parcels, name = "NetAv", value = parcels_raw2)
+dbWriteTable(conn = Parcels, name = "tableP", value = parcels_raw) #Creating all my data
 
-#Whatever you call the table within the connection (i.e. dbWriteTable(conn = XXX, name = tablename, value = your_dataframe)), use that in your SQL code: SELECT columnnames FROM tablename.
+```
+
+```{r}
+
+OldParcels <- dbConnect(RSQLite::SQLite(), dbname = "parcels.db") 
+dbWriteTable(conn = Parcels, name = "tableOrig", value = parcels_raw) 
+dbListTables(OldParcels) 
+
 
 
 ```
 
+
+
 ```{sql, connection=Parcels}
 
-SELECT acreage FROM acreage
-
+SELECT * FROM tableP
  
 ```
 
 #1. ##  1. What are the 10 most-frequently-occuring land uses (in descending order)? 
-```{sql, connection=db}
 
-SELECT name AS tables FROM Santa_Barbara_County_parcels_2011
-WHERE type = 'table'
+If you are not sure, use SELECT * FROM tableP to select all the columns, then see which columns are useful for answering the question and switch the * to those column names. #tableP
+```{sql, connection=OldParcels}
 
-
-```
-
-
-##  1. What are the 10 most-frequently-occuring land uses (in descending order)? 
-Hint: Load the UseCodes into a separate tibble, then join it to the parcels tibble.
-
-```{sql connection=db}
-
-
-
-
-SELECT LandUse, personal FROM Person
+SELECT DISTINCT Acreage, LandUse
+FROM tableOrig
+WHERE LandUse IS NOT NULL
+GROUP BY LandUse
+ORDER BY Acreage DESC
 
 
 ```
+
+
 
 ## 2. How many acres are in agricultural preserves? 
-Assume agricultural preserves are indicated by non-NA values for AgPres.
 Answer: 549,563.4 acres
-```{sql connection=db}
+
+```{sql connection=Parcels}
+
+SELECT sum(acreage)
+FROM tableP 
+WHERE agpress IS NOT NULL
 
 
 ```
@@ -127,7 +133,11 @@ Answer: 549,563.4 acres
 Answer: The average net value per acre is $34,202.63
 
 
-```{r}
+```{sql connection=Parcels}
+
+SELECT avg(NetAv)/avg(acreage) 
+FROM tableP
+WHERE NetAv IS NOT NULL
 
 
 
@@ -137,7 +147,12 @@ Answer: The average net value per acre is $34,202.63
 Answer: The total net assessed value of non-taxable parcels is $1,093,026,091 
 
 
-```{r}
+```{sql connection=Parcels}
+
+SELECT sum(NetAv)
+FROM tableP 
+WHERE Ntcode IS NOT NULL
+
 
 ```
 
@@ -146,15 +161,28 @@ Use the complete mailing address for tax statements as a proxy for the parcel ow
 
 #The tenth row should be PO Box 338, Santa Ynez, with about 9,200 acres.
 
-```{r}
+```{sql connection=Parcels}
+
+SELECT DISTINCT Address1, acreage 
+FROM tableP 
+WHERE Address1 IS NOT NULL
+GROUP BY Address1 
+ORDER BY acreage DESC;
 
 
 ```
 
 ## 6. What are the 10 largest property holders, by net assessed value?
+The second row should be 735 Anacapa, SB, at about $190 million.
 
-```{r}
+```{sql connection=Parcels}
 
+
+SELECT DISTINCT Address1, NetAv 
+FROM tableP 
+WHERE Address1 IS NOT NULL
+GROUP BY Address1 
+ORDER BY NetAv DESC;
 
 ```
 
