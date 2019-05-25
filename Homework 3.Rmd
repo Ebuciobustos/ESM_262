@@ -1,0 +1,141 @@
+---
+title: "Homework 3"
+author: "Edaysi Bucio"
+date: "24 de mayo de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+autopower = function(V, m, A, cdrag=0.3, crolling=0.015,pair=1.2,g=9.8) {
+  P = crolling*m*g*V + 1/2*A*pair*cdrag*V**3
+  return(P)
+}
+
+```
+
+## Assignment indications
+- What if we design new highways that have lower rolling coefficients where we reduce the rolling coefficient by 50%
+
+- Alternatively, we implement a policy that reduce the mean speed from 100 km/h to 80 km/h (still with 10% standard deviation)
+
+- Calculate the mean power for both (assuming the same car probabilities above) and sampling from speeeds with 10% standard deviation = assume a normal distribution
+
+- Put your function in a *.R file Use an Rmarkdown document to do your analysis and summarize result at the end
+
+Submit both R file (function) and Rmarkdown that does the analysis as usual using a git link
+
+
+#Function
+```{r}
+
+Speeds_Function100 = function(speeds100) {
+  result = speeds100**0.28
+  return(result)
+}
+
+
+Speeds_Function80 = function(speeds80) {
+  result = speeds80**0.28
+  return(result)
+}
+
+```
+
+
+#Step 1
+
+```{r}
+
+# Generate sample speeds from a distribution
+# Step 1  create data frame to store results 
+nsample = 100000
+speeds100 = rnorm(mean=100*0.028, sd=10, n=nsample) #Speed in m/s
+results100 = data.frame(speed=speeds100, power=NA)
+head(results100)
+
+
+speeds80 = rnorm(mean=80*0.28, sd=10, n=nsample) #Speed in m/s
+results80 = data.frame(speed=speeds80, power=NA)
+head(results80)
+
+#Yep, I got negative speeds
+
+```
+
+#Plot results. Example of plot
+```{r}
+
+#100 km/h or 27.7 m/s
+results100$power = autopower(V=speeds100, A=25, m=20000)
+# ALWAYS look at your results to make sure it make sense
+ggplot(results100, aes(speeds100, power/1000))+geom_point()+labs(x="speed in m/s", y="power in kW")
+
+
+#80 km/h or 22.2 m/s
+results80$power = autopower(V=speeds80, A=25, m=20000)
+# ALWAYS look at your results to make sure it make sense
+ggplot(results80, aes(speeds80, power/1000))+geom_point()+labs(x="speed in m/s", y="power in kW")
+
+
+```
+
+# Sampling different cars
+```{r}
+
+possible_cars = data.frame(mass=c(31000,45000,38000), area = c(25,30,22))
+
+# first look at how results vary for a given speed say 100km/hr
+speed_base1 = 100 * 0.28
+speed_base2 = 80 * 0.28
+
+# because I have one mass and area for each car there will be a unique speed
+#Speed 100 km/h
+possible_cars$power = autopower(V=speed_base, A = possible_cars$area, m=possible_cars$area)
+                         
+ggplot(possible_cars, aes(x=mass, y=power, fill=mass))+geom_col()+labs(y="Power W", x="Mass (kg)")
+
+#Speed 80km/h
+possible_cars$power = autopower(V=speed_base2, A = possible_cars$area, m=possible_cars$area)
+                         
+ggplot(possible_cars, aes(x=mass, y=power, fill=mass))+geom_col()+labs(y="Power W", x="Mass (kg)")
+
+
+
+```
+
+
+
+# Calculate the mean power for both (assuming the same car probabilities above) and sampling from speeeds with 10% standard deviation = assume a normal distribution.
+
+Mean power with a speed of 100km/hr = 3.331
+Mean power with a speed of 80km/hr = 3.332
+
+```{r}
+
+# Estimate average power use given a range of speeds and different probabilities of particular cars
+
+possible_cars$prob = c(0.4, 0.4, 0.2)
+
+
+
+# Normal distribution of speeds with mean 100km/hr and with 80km/hr
+m = log(100*0.28)
+m2 = log(80*0.28)
+nsample = 100000
+speeds = rnorm(mean=m, sd=0.1*m, nsample)
+summary(speeds) 
+
+speeds2 = rnorm(mean=m2, sd=0.1*m, nsample)
+summary(speeds2) 
+
+
+```
+
+# Calculate the mean power for both (assuming the same car probabilities above) and sampling from speeeds with 10% standard deviation = assume a normal distribution.
+
+Mean power with a speed of 100km/hr = 3.331
+Mean power with a speed of 80km/hr = 3.332
