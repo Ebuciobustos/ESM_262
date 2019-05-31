@@ -1,0 +1,102 @@
+---
+title: "Homework 4. Fisu Function"
+author: "Edaysi Bucio"
+date: "29 de mayo de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+```
+
+## Indications
+Write a function that takes as input
+
+- A table that has prices for different fish
+- A table that has the number caught for each fish YES
+species for each location
+- Each location is in a different column
+- Each fish is in a different row 
+
+#Input
+```{r}
+
+#Creating vectors
+fish = c("grouper","mullet","tuna","puffer","snapper")
+price = c("20","15","18","10","14")
+catch = c("150","180","220","200","92")
+location = c("location 1","location 2","location 3","location 4","location 5")
+
+# Creating my Fish data frame
+Fish_df <- crossing(fish, location) %>%
+  mutate(catch = runif(min = 0, max = 100, n = nrow(.)))
+
+Fish_df
+
+```
+
+
+#Function
+
+Function output will be:
+- most frequently caught fish in each location
+- total revenue for each location **OPTIONAL?**
+- total fisheries revenue sum 
+- if user requests it graph of revenue by location and total revenue (as text)
+
+Place your function in an *.R file Make a package that contains this function
+
+Generate some example data for your function; and show how this is created and used in an R markdown document Submit package and Rmarkdown as usual as a git link on gauchospace.
+
+```{r Function}
+
+#The function output should always include the total revenue as one of the elements in the list.
+
+Fish_function = function(Fish_df) {
+  fish = as.character(Fish_df)
+  calc_fish_revenue = fish**price
+  calc_mostfrecuent_caught = fish**location
+  calc_total_revenue = sum(calc_fish_revenue)
+  return(list(num = calc_fish_revenue, calc_mostfrecuent_caught = calc_mostfrecuent_caught, calc_mostfrecuent_caught = calc_mostfrecuent_caught))                         
+}
+
+
+
+#Class example
+
+
+## function (species) 
+## {
+##     species = as.factor(species)
+##     tmp = (summary(species)/sum(summary(species)))^2
+##     diversity = sum(tmp)
+##     return(diversity)
+## }
+
+
+
+##function (species) 
+## {
+##     species = as.factor(species)
+##     tmp = (summary(species)/sum(summary(species)))^2
+##     diversity = 1 - sum(tmp)
+##     nspecies = length(summary(species))
+##     tmp = which.max(summary(species))
+##     dominant = names(summary(species)[tmp])
+##     return(list(num = nspecies, simpson = diversity, dominant = dominant))
+## }
+
+```
+
+## Retuning values
+```{r}
+
+Fish_function$calc_fish_revenue
+
+
+
+```
+
