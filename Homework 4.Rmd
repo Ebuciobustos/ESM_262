@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(dplyr)
 
 ```
 
@@ -30,9 +31,13 @@ price = c("20","15","18","10","14")
 catch = c("150","180","220","200","92")
 location = c("location 1","location 2","location 3","location 4","location 5")
 
+as.numeric(catch)
+as.numeric(price)
+
 # Creating my Fish data frame
 Fish_df <- crossing(fish, location) %>%
-  mutate(catch = runif(min = 0, max = 100, n = nrow(.)))
+  mutate(catch = runif(min = 0, max = 100, n = nrow(.))) %>%
+  mutate(price = runif(min = 0, max = 100, n = nrow(.)))
 
 Fish_df
 
@@ -43,7 +48,7 @@ Fish_df
 
 Function output will be:
 - most frequently caught fish in each location
-- total revenue for each location **OPTIONAL?**
+- total revenue for each location
 - total fisheries revenue sum 
 - if user requests it graph of revenue by location and total revenue (as text)
 
@@ -55,48 +60,60 @@ Generate some example data for your function; and show how this is created and u
 
 #The function output should always include the total revenue as one of the elements in the list.
 
-Fish_function = function(Fish_df) {
+Fish_function <- function(Fish_df) {
   fish = as.character(Fish_df)
-  calc_fish_revenue = fish**price
+  calc_fish_revenue = catch**price
   calc_mostfrecuent_caught = fish**location
   calc_total_revenue = sum(calc_fish_revenue)
-  return(list(num = calc_fish_revenue, calc_mostfrecuent_caught = calc_mostfrecuent_caught, calc_mostfrecuent_caught = calc_mostfrecuent_caught))                         
+  return(list(num = calc_fish_revenue, calc_mostfrecuent_caught = calc_mostfrecuent_caught, calc_total_revenue = calc_total_revenue))                         
 }
 
-
-
-#Class example
-
-
-## function (species) 
-## {
-##     species = as.factor(species)
-##     tmp = (summary(species)/sum(summary(species)))^2
-##     diversity = sum(tmp)
-##     return(diversity)
-## }
-
-
-
-##function (species) 
-## {
-##     species = as.factor(species)
-##     tmp = (summary(species)/sum(summary(species)))^2
-##     diversity = 1 - sum(tmp)
-##     nspecies = length(summary(species))
-##     tmp = which.max(summary(species))
-##     dominant = names(summary(species)[tmp])
-##     return(list(num = nspecies, simpson = diversity, dominant = dominant))
-## }
 
 ```
 
 ## Retuning values
+- Most frequently caught fish in each location
+
+Answer:
+
+# Location 1 = snapper with 97.77 kilograms
+# Location 2 = grouper with 84.86 kilograms
+# Location 3 = tunna with 90.05 kilograms
+# Location 4 = mullet with 70.91 kilograms 
+# Location 5 = puffer with 96.72 kilograms
 ```{r}
 
-Fish_function$calc_fish_revenue
+(Most_caught <- Fish_df %>%
+  group_by(location, fish) %>%
+  summarize(max_catch = max(catch)))
 
+(Most_caught <- Fish_df %>%
+  group_by(location) %>%
+  summarize(Max_catch = max(catch), fish_specie = mode(fish)))
 
 
 ```
+
+## Total revenue for each location
+
+```{r}
+
+Total_revenue <- Fish_df %>%
+  group_by(location) %>%
+  summarise(revenue = sum(price))
+
+Total_revenue
+
+```
+
+## Total fisheries revenue sum 
+```{r}
+Revenue_sum <- Fish_df %>%
+  summarise(revenue = sum(price))
+
+Revenue_sum
+
+
+```
+
 
