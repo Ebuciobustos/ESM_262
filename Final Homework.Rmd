@@ -1,0 +1,141 @@
+---
+title: "Assignment_packages"
+author: "Edaysi Bucio"
+date: "4 de junio de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggplot2)
+
+```
+
+#Data
+Database source: https://climateknowledgeportal.worldbank.org/download-data 
+```{r}
+
+TempMX <- read_csv("temperatureMX.csv")
+PreciMX <- read_csv("precipitationMX.csv")
+
+```
+
+
+1. At least two different functions that summarize climate data in some way (your choice - it could be finding a trend, or finding extremes; or even simply mean winter precipitation)
+
+1.1 First function. I want to find the highest temperatures registered from 1901 to 2016 in Mexico. With this information I can look if there is a trend in warmer days increasing or decreasing over time. 
+
+```{r}
+
+#Data frame
+#TempMX_df <- TempMX 
+
+#Function
+Climate_average <- function(TempMX_df, plot = TRUE){
+    Hot_days <- TempMX_df %>%
+    group_by(Year) %>%
+    filter(Temperature == max(Temperature)) %>%
+    ungroup() 
+    if(plot == TRUE) {
+Hot_days_plot <- ggplot(TempMX_df, aes(x = Year, y = Temperature)) +
+    geom_point(size = 1.5) + 
+  ggtitle("Maximum Temperature in Celsius From Mexico 1901-2016") +
+  labs(y="Anually Maximum Temperature (degrees C)", x="Year")+
+  theme_classic() + 
+  geom_smooth(method="lm")
+    print(Hot_days_plot)
+    }
+    return(Hot_days)
+  } #First function that summarize climate trends
+
+(x <- Climate_average(TempMX_df = TempMX, plot = TRUE))
+
+#Overall questions: Am I adding the multi-dimensional arrays in this function? 
+
+
+
+```
+
+
+1.2. My second function will look at an average precipitation per year from 1901 to 2016 in Mexico. Afterwards, I can calculate a measure of impact between hot days and changes in precipitation and potential impacts on agriculture or water availability in the country. 
+
+```{r}
+
+#Data frame
+#PreciMX_df <- PreciMX
+
+#Function
+Rainfall_average <- function(PreciMX_df, plot = TRUE){
+  Precip_average <- PreciMX_df %>%
+    group_by(Year) %>%
+    summarise(Average = mean(Rainfall)) %>%
+    ungroup() 
+    if(plot == TRUE) {
+Rainfall_average_plot <- ggplot(PreciMX_df, aes(x = Year, y = Rainfall)) +
+    geom_point(size = 1.5) + 
+  ggtitle("Average Rainfall From Mexico 1901-2016") +
+  labs(y="Average Rainfall", x="Year")+
+  theme_classic() + 
+  geom_smooth(method="lm")
+  print(Rainfall_average_plot)
+    }
+  return(Precip_average) 
+  } #First function that summarize climate trends
+
+(r <-  Rainfall_average(PreciMX_df = PreciMX, plot = TRUE)) 
+
+
+
+```
+
+
+
+2. At least two functions that calculate some measure of impact (you can really make these us) -so for example you could create a function that computes a heat stress index based on air temperature with parameters that vary with for different species; or a function that estimates water supply from precipitation with parameters that vary to reflect water storage .you can make something up just as long as its somewhat sensible.
+
+2.1. Measure of impact: I'm calculating if there is a relationship between warmer days and drought years
+
+```{r}
+
+#Assuming that the previous database have sea surface temperature (Temperature), I will identified El Niño years and potential impacts on marine species such as squid and tuna. Thus, I will create a function that computes ENSO index based on SST and impacts on different marine species. 
+
+Nino_impacts <- function(El_nino_df){
+    Hot_days <- El_nino_df %>%
+    group_by(Year) %>%
+    filter(Temperature == max(Temperature))
+    ungroup()   
+      {
+y <- x %>%
+    select(Temperature)
+    }
+Squid_impacts <- y
+if(Squid_impacts < 24) 
+  print("North distribution")
+  
+tuna_impacts <- y
+if(tuna_impacts > 24)  #The condition has length > 1 and only the first element will be usedError: unexpected '}' in "if(tuna_impacts > 24) }"
+  print("South distribution")
+} 
+   #First function that summarize climate trends
+
+
+(climate_impacts <- Squid_impacts(El_nino_df = TempMX))
+
+
+
+
+
+```
+
+2.2  Measure of impact: I will create a function that estimates water supply from precipitation with parameters that vary to reflect water storage. Those parameters are hot days and average precipitation
+
+```{r}
+
+```
+
+3. One function that estimates the costs of impacts
+```{r}
+
+```
+
