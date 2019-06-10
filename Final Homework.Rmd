@@ -94,36 +94,43 @@ Rainfall_average_plot <- ggplot(PreciMX_df, aes(x = Year, y = Rainfall)) +
 
 2. At least two functions that calculate some measure of impact (you can really make these us) -so for example you could create a function that computes a heat stress index based on air temperature with parameters that vary with for different species; or a function that estimates water supply from precipitation with parameters that vary to reflect water storage .you can make something up just as long as its somewhat sensible.
 
-2.1. Measure of impact: I'm calculating if there is a relationship between warmer days and drought years
+2.1. Measure of impact: I'm calculating species distribution according sea surface temperature. 
 
 ```{r}
 
-#Assuming that the previous database have sea surface temperature (Temperature), I will identified El Niño years and potential impacts on marine species such as squid and tuna. Thus, I will create a function that computes ENSO index based on SST and impacts on different marine species. 
+#Assuming that the previous database have sea surface temperature (Temperature), I will identified El Niño years and potential impacts on marine species such as squid and tuna in the coast of California. Thus, I will create a function that computes ENSO index based on SST and impacts on different marine species. 
 
 Nino_impacts <- function(El_nino_df){
     Hot_days <- El_nino_df %>%
     group_by(Year) %>%
     filter(Temperature == max(Temperature))
-    ungroup()   
       {
 y <- x %>%
     select(Temperature)
     }
 Squid_impacts <- y
-if(Squid_impacts < 24) 
-  print("North distribution")
+if(Squid_impacts < 25) 
+  print("North distribution") #the condition has length > 1 and only the first element will be used[1] "North distribution"
   
-tuna_impacts <- y
-if(tuna_impacts > 24)  #The condition has length > 1 and only the first element will be usedError: unexpected '}' in "if(tuna_impacts > 24) }"
-  print("South distribution")
+Sardine_impacts <- y
+if(Sardine_impacts > 25)
+
+Nino_species_impact_output <- list('Squid_impacts' = Squid_impacts, 'sardine_impacts' = Sardine_impacts)
+return(Nino_species_impact_output)
 } 
-   #First function that summarize climate trends
 
 
-(climate_impacts <- Squid_impacts(El_nino_df = TempMX))
+speeds = runif(min=0, max=100, n=300)
+
+maxspeed=0
+for ( i  in 1:length(speeds)) {
+  maxspeed = ifelse(speeds[i] > maxspeed, speeds[i], maxspeed)
+}
+
+maxspeed
 
 
-
+(climate_impacts <- Nino_impacts(El_nino_df = TempMX)) #Why I'm getting weird numbers
 
 
 ```
@@ -132,10 +139,48 @@ if(tuna_impacts > 24)  #The condition has length > 1 and only the first element 
 
 ```{r}
 
+
+
+Nino_impacts <- function(El_nino_df){
+    Hot_days <- El_nino_df %>%
+    group_by(Year) %>%
+    filter(Temperature == max(Temperature))
+      {
+y <- x %>%
+    select(Temperature)
+    }
+    
+squid_impact = 0
+for (i in 1: length(y)) 
+  squid_impact = ifelse(y[i] >  squid_impact, y[i], squid_impact)
+
+
+sardine_impact = 0
+for (i in 1: length(y)) 
+  sardine_impact = ifelse(y[i] >  sardine_impact, y[i], sardine_impact)
+
+Nino_species_impact_output <- list('Squid_impacts' = squid_impact, 'sardine_impacts' = sardine_impact)
+return(Nino_species_impact_output)
+} 
+
+
+
+
+(climate_impacts <- Nino_impacts(El_nino_df = TempMX)) #Why I'm getting weird numbers
+
+
 ```
 
 3. One function that estimates the costs of impacts
+#Changes in squid and sardine abundance and availaility along the coast of California can have different economic impacts to the fishery industry. For example, during el Nino events, squid shits its distribution to Northern California. Market squid is one of the most important fisheries in Souther California, generating in average $70 billion dollarn exvessel price, therefore extreme abundance changes in the specie can impact the fishery industry in Southern California.
+
+#This function will determine economic looses of market squid distribution changes in the fishing industry under el Nino events. 
 ```{r}
 
 ```
 
+4. he package should contain: 
+- some sample data
+- documentation for ALL functions
+- a vignette that shows how to use several of the functions with the sample data
+- 3 separate tests - (next weeks lecture)
